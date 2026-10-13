@@ -7,17 +7,26 @@
 #include <vector>
 using namespace std;
 
-// double dummy(d,T){
-//     // temperature check
-// }
 
 int main(){
 
     float T;
     cout << "Input Temperature: " ;
     cin >> T;
-    int N = 100;
-    int l = 100;
+
+    int l;
+    cout << "Input grid side length: " ;
+    cin >> l;
+
+    int N;
+    cout << "Input Number of Steps, N: " ;
+    cin >> N;
+
+    int n_equil = N / 2;            // discard first half
+    int meas_every = l * l;         // measure once per sweep
+    double m_sum = 0;
+    int n_meas = 0;
+
     int grid[l][l] = {}; // start all spin down
 
     // Initialise grid to have random elements +- 1
@@ -46,21 +55,26 @@ int main(){
         int dE = 2 * grid[xi][yi] * (up + down + left + right);   // Calculate deltaE
 
         double r = (double)rand() / RAND_MAX;
-        if (dE <= 0 || r < exp(-dE / T)) {
-            grid[xi][yi] = -grid[xi][yi];   // accept
+        if (dE <= 0 || r < exp(-dE / T)) {    // accept condition
+            grid[xi][yi] = -grid[xi][yi];   
         }
         // otherwise reject
+        
+
+        // Calculate net magnitisation every lxl flips, only after N/2 flips
+        if (i >= n_equil && i % meas_every == 0) {
+            int M = 0;
+            for (int a = 0; a < l; a++) {
+                for (int b = 0; b < l; b++) {
+                    M += grid[a][b];
+                }
+            }
+
+            m_sum += (double)abs(M) / (l * l);
+            n_meas++;
+        }
+
     }
-
-        // TODO: Add equilibriation
-    int M = 0;
-    for (int i = 0; i < l; i++)
-        for (int j = 0; j < l; j++)
-            M += grid[i][j];
-
-    cout << "m = " << (double)abs(M) / (l * l) << endl;
-
-
-
+    cout << "T = " << T << ", <m> = " << m_sum / n_meas << endl;
 }
 
