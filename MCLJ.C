@@ -2,6 +2,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <vector>
+#include <iomanip>
+
 using namespace std;
 
 #define DEBUG(x) std::cout << "DEBUG: " << #x << " = " << x << " at line " << __LINE__ << std::endl
@@ -24,21 +26,22 @@ double rand01();
 
 int main(int argc, char* argv[]){
 
-    if (argc != 3){
-        cerr << "Usage: " << argv[0] << " <step_N> <T>" << endl;
+    if (argc != 4){
+        cerr << "Usage: " << argv[0] << " <step_N> <T> <rho>" << endl;
         return 1;
     }
 
     int    step_N = stoi(argv[1]);   // number of MC steps
-    double T      = stod(argv[2]);   
+    double T = stod(argv[2]);
+    double rho = stod(argv[3]); // density
+
     
     int particle_N = 100;
     double eps = 1;
     double sigma = 1;
-    double rho = 0.2; // Density
     double side_len = sqrt((particle_N/rho)); // L = sqrt(volume) = sqrt(N/rho)
     double rc = 2.5 * sigma;
-    double delta = 0.4*side_len; // Max displacement
+    double delta = 0.15*side_len; // Max displacement
 
     vector<double> X(particle_N,0);
     vector<double> Y(particle_N,0);
@@ -52,7 +55,7 @@ int main(int argc, char* argv[]){
 
         int i = rand() % particle_N; // uniform distribution to begin with.
 
-        double E_old = total_energy(X, Y, side_len, rc, sigma, eps);
+        double E_old = particle_energy(i, X[i], Y[i], X, Y, side_len, rc, sigma, eps);
 
 
         double x_new = wrap(X[i] + delta * (2.0 * rand01() - 1.0), side_len);
@@ -78,6 +81,9 @@ int main(int argc, char* argv[]){
     }
 
     cout << "Acceptance: " << (double)Naccept / step_N << endl;
+
+    // Check conservation of energy:
+    cout << setprecision(15); 
     cout << "E/N final:  " << E / particle_N << endl;
     cout << "E/N check:  " << total_energy(X, Y, side_len, rc, sigma, eps) / particle_N << endl;
 
